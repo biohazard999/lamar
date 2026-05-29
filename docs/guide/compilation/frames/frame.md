@@ -13,8 +13,6 @@ To build a custom frame, you first need to create a new class that subclasses `F
 The one thing you absolutely have to do when you create a new `Frame` class is to override the `GenerateCode()` method. Take this example
 from Lamar itself for a frame that just injects a comment into the generated code:
 
-<!-- snippet: sample_CommentFrame -->
-<a id='snippet-sample_commentframe'></a>
 ```cs
 public class CommentFrame : SyncFrame
 {
@@ -35,8 +33,6 @@ public class CommentFrame : SyncFrame
     }
 }
 ```
-<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/LamarCodeGeneration/Frames/Frame.cs#L16-L35' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_commentframe' title='Start of snippet'>anchor</a></sup>
-<!-- endSnippet -->
 
 A couple things to note about the `GenerateCode()` method:
 
@@ -53,7 +49,7 @@ a C# `using` block that surrounds the inner code:
 ```cs
 public class NoArgCreationFrame : SyncFrame
 {
-    public NoArgCreationFrame(Type concreteType) 
+    public NoArgCreationFrame(Type concreteType)
     {
         // By creating the variable this way, we're
         // marking the variable as having been created
@@ -84,7 +80,7 @@ public class NoArgCreationFrame : SyncFrame
     }
 }
 ```
-<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/Lamar.Testing/Examples/NoArgConstructor.cs#L9-L42' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_noargcreationframe' title='Start of snippet'>anchor</a></sup>
+<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/Lamar.Testing/Examples/NoArgConstructor.cs#L9-L44' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_noargcreationframe' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## Creating a Variable within a Frame
@@ -103,7 +99,7 @@ public NoArgCreationFrame(Type concreteType)
     Output = new Variable(concreteType, this);
 }
 ```
-<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/Lamar.Testing/Examples/NoArgConstructor.cs#L47-L55' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_noargcreationframector' title='Start of snippet'>anchor</a></sup>
+<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/Lamar.Testing/Examples/NoArgConstructor.cs#L48-L56' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_noargcreationframector' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 Otherwise, you could also have written that code like this:
@@ -119,7 +115,7 @@ public NoArgCreationFrame(Type concreteType)
     Output = Create(concreteType);
 }
 ```
-<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/Lamar.Testing/Examples/NoArgConstructor.cs#L58-L66' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_noargcreationframector2' title='Start of snippet'>anchor</a></sup>
+<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/Lamar.Testing/Examples/NoArgConstructor.cs#L59-L67' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_noargcreationframector2' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## Finding Dependent Variables
@@ -135,22 +131,42 @@ public class GetInstanceFrame : SyncFrame, IResolverFrame
 {
     private static readonly MethodInfo _resolveMethod =
         ReflectionHelper.GetMethod<Instance>(x => x.Resolve(null));
-    
-    
-    
-    private Variable _scope;
+
     private readonly string _name;
+
+    private Variable _scope;
 
     public GetInstanceFrame(Instance instance)
     {
         Variable = new ServiceVariable(instance, this, ServiceDeclaration.ServiceType);
-        
+
         _name = instance.Name;
+    }
+
+    public ServiceVariable Variable { get; }
+
+    public void WriteExpressions(LambdaDefinition definition)
+    {
+        var scope = definition.Scope();
+        var expr = definition.ExpressionFor(Variable);
+
+        var instance = Variable.Instance;
+
+        var call = Expression.Call(Expression.Constant(instance), _resolveMethod, scope);
+        var assign = Expression.Assign(expr, Expression.Convert(call, Variable.VariableType));
+        definition.Body.Add(assign);
+
+        if (Next is null)
+        {
+            throw new InvalidCastException(
+                $"{typeof(GetInstanceFrame).FullNameInCode()}.{nameof(Next)} must not be null.");
+        }
     }
 
     public override void GenerateCode(GeneratedMethod method, ISourceWriter writer)
     {
-        writer.Write($"var {Variable.Usage} = {_scope.Usage}.{nameof(Scope.GetInstance)}<{Variable.VariableType.FullNameInCode()}>(\"{_name}\");");
+        writer.Write(
+            $"var {Variable.Usage} = {_scope.Usage}.{nameof(Scope.GetInstance)}<{Variable.VariableType.FullNameInCode()}>(\"{_name}\");");
         Next?.GenerateCode(method, writer);
     }
 
@@ -159,32 +175,9 @@ public class GetInstanceFrame : SyncFrame, IResolverFrame
         _scope = chain.FindVariable(typeof(Scope));
         yield return _scope;
     }
-    
-    public ServiceVariable Variable { get; }
-    
-    public void WriteExpressions(LambdaDefinition definition)
-    {
-        var scope = definition.Scope();
-        var expr = definition.ExpressionFor(Variable);
-
-        var instance = Variable.Instance;
-
-        var @call = Expression.Call(Expression.Constant(instance), _resolveMethod, scope);
-        var assign = Expression.Assign(expr, Expression.Convert(@call, Variable.VariableType));
-        definition.Body.Add(assign);
-
-        if (Next is IResolverFrame next)
-        {
-            next.WriteExpressions(definition);
-        }
-        else
-        {
-            throw new InvalidCastException($"{Next.GetType().GetFullName()} does not implement {nameof(IResolverFrame)}");
-        }
-    }
 }
 ```
-<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/Lamar/IoC/Frames/GetInstanceFrame.cs#L15-L68' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_getinstanceframe' title='Start of snippet'>anchor</a></sup>
+<sup><a href='https://github.com/JasperFx/lamar/blob/master/src/Lamar/IoC/Frames/GetInstanceFrame.cs#L14-L67' title='Snippet source file'>snippet source</a> | <a href='#snippet-sample_getinstanceframe' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 When you write a `FindVariables()` method, be sure to keep a reference to any variable you need for later, and return that variable as part of the enumeration from this method. Lamar uses the dependency relationship between frames, the variables they depend on, and the creators of those variables to

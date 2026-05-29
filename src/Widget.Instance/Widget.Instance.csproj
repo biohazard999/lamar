@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lamar\Lamar.csproj" />
+    <ProjectReference Include="..\Widget.Core\Widget.Core.csproj" />
+  </ItemGroup>
+
+</Project>

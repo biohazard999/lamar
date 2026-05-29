@@ -1,42 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Baseline" Version="2.1.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
-    <PackageReference Include="Shouldly" Version="3.0.0" />
-    <PackageReference Include="NSubstitute" Version="3.1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Widget.Core\Widget.Core.csproj" />
-    <ProjectReference Include="..\..\Widget.Instance\Widget.Instance.csproj" />
-    <ProjectReference Include="..\..\Widget.Registration\Widget.Registration.csproj" />
-    <ProjectReference Include="..\Aspect.Logger\Widget.Aspect.Logger.csproj" />
-    <ProjectReference Include="..\Lamar.Diagnostics\Lamar.Diagnostics.csproj" />
-    <ProjectReference Include="..\Lamar\Lamar.csproj" />
-    <ProjectReference Include="..\StructureMap.Testing.GenericWidgets\StructureMap.Testing.GenericWidgets.csproj" />
-    <ProjectReference Include="..\StructureMap.Testing.Widget2\StructureMap.Testing.Widget2.csproj" />
-    <ProjectReference Include="..\StructureMap.Testing.Widget3\StructureMap.Testing.Widget3.csproj" />
-    <ProjectReference Include="..\StructureMap.Testing.Widget4\StructureMap.Testing.Widget4.csproj" />
-    <ProjectReference Include="..\StructureMap.Testing.Widget5\StructureMap.Testing.Widget5.csproj" />
-    <ProjectReference Include="..\StructureMap.Testing.Widget\StructureMap.Testing.Widget.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+        <LangVersion>10.0</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+        <PackageReference Include="xunit" Version="2.6.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Shouldly" Version="4.2.1" />
+        <PackageReference Include="NSubstitute" Version="5.1.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Aspect.Logger\Widget.Aspect.Logger.csproj" />
+        <ProjectReference Include="..\Lamar\Lamar.csproj" />
+        <ProjectReference Include="..\StructureMap.Testing.GenericWidgets\StructureMap.Testing.GenericWidgets.csproj" />
+        <ProjectReference Include="..\StructureMap.Testing.Widget2\StructureMap.Testing.Widget2.csproj" />
+        <ProjectReference Include="..\StructureMap.Testing.Widget3\StructureMap.Testing.Widget3.csproj" />
+        <ProjectReference Include="..\StructureMap.Testing.Widget4\StructureMap.Testing.Widget4.csproj" />
+        <ProjectReference Include="..\StructureMap.Testing.Widget5\StructureMap.Testing.Widget5.csproj" />
+        <ProjectReference Include="..\StructureMap.Testing.Widget\StructureMap.Testing.Widget.csproj" />
+        <ProjectReference Include="..\Widget.Core\Widget.Core.csproj" />
+        <ProjectReference Include="..\Widget.Instance\Widget.Instance.csproj" />
+        <ProjectReference Include="..\Widget.Registration\Widget.Registration.csproj" />
+    </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Remove="Codegen\StubGeneratedMethod.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="IoC\Acceptance\generated_code.cs" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="Codegen\StubGeneratedMethod.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="IoC\Acceptance\generated_code.cs" />
+    </ItemGroup>
 </Project>

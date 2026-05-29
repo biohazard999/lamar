@@ -9,29 +9,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 5.0.x
-    - name: Install dependencies
-      run: dotnet restore
+        dotnet-version: |
+          9.0.x
+          10.0.x
+
     - name: Build
       run: dotnet build Lamar.sln --configuration Release
 
-    - name: Publish Lamar
-      uses: brandedoutcast/publish-nuget@v2.5.2
-      with:
-          PROJECT_FILE_PATH: src/Lamar/Lamar.csproj
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          
-    - name: Publish Lamar.Microsoft.DependencyInjection
-      uses: brandedoutcast/publish-nuget@v2.5.2
-      with:
-        PROJECT_FILE_PATH: src/Lamar.Microsoft.DependencyInjection/Lamar.Microsoft.DependencyInjection.csproj
-        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+    - name: Pack
+      run: |
+        dotnet pack src/Lamar/Lamar.csproj --configuration Release --no-build --output ${{ github.workspace }}/artifacts
+        dotnet pack src/Lamar.Microsoft.DependencyInjection/Lamar.Microsoft.DependencyInjection.csproj --configuration Release --no-build --output ${{ github.workspace }}/artifacts
 
-    - name: Publish Lamar.Diagnostics
-      uses: brandedoutcast/publish-nuget@v2.5.2
-      with:
-        PROJECT_FILE_PATH: src/Lamar.Diagnostics/Lamar.Diagnostics.csproj
-        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+    - name: Publish to NuGet
+      run: dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

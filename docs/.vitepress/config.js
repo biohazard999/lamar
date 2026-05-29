@@ -16,36 +16,42 @@ module.exports = {
     nav: [
       { text: 'Guide', link: '/guide/' },
       { text: 'Release Notes', link: 'https://github.com/JasperFx/lamar/releases' },
-      { text: 'Gitter | Join Chat', link: 'https://gitter.im/JasperFx/lamar?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge' }
+      { text: 'Discord | Join Chat', link: 'https://discord.gg/WMxrvegf8H' }
     ],
 
-    algolia: {
-      appId: 'BL3MV9D81Y',
-      apiKey: 'b9590d6ae8461868e8449d64285f57c1',
-      indexName: 'lamar_index'
+    search: {
+        provider: 'local'	
     },
 
-    sidebar: [
-      {
-        text: 'Getting Started',
-        link: '/guide/'
-      },
-      {
-        text: 'Inversion of Control',
-        link: '/guide/ioc/',
-        children: getIOCSideBar()
-      },
-      {
-        text: 'Compilation',
-        link: '/guide/compilation/',
-        children: getCompilationSideBar()
-      },
+    sidebar: {
+      '/': 
+      [
+        {
+          text: 'Getting Started',
+          collapsed: false,
+          items: [
+            {
+              text: 'What is Lamar',
+              link: '/guide/'
+            },]
+        },
+        {
+          text: 'Inversion of Control',
+          collapsed: false,
+          items: getIOCSideBar()
+        }
     ]
+  }
+    
   }
 }
 
 function getIOCSideBar() {
   return [
+    {
+      text: 'Lamar as IoC Container',
+      link: '/guide/ioc/'
+    },
     {
       text: 'Software Design Concepts',
       link: '/guide/ioc/concepts'
@@ -193,7 +199,7 @@ function getIOCSideBar() {
       link: '/guide/ioc/injecting-at-runtime'
     },
     {
-      text: 'Lamar and IDisposable',
+      text: 'Lamar, IDisposable, and IAsyncDisposable',
       link: '/guide/ioc/disposing'
     },
     {
@@ -215,37 +221,3 @@ function getIOCSideBar() {
   ]
 }
 
-function getCompilationSideBar() {
-  return [
-    {
-      text: 'Compiling code with AssemblyGenerator',
-      link: '/guide/compilation/assembly-generator'
-    },
-    {
-      text: 'Generating code with ISourceWriter',
-      link: '/guide/compilation/source-writer'
-    },
-    {
-      text: 'The "Frame" Model',
-      link: '/guide/compilation/frames/',
-      children: [
-        {
-          text: 'Working with Variables',
-          link: '/guide/compilation/frames/variables'
-        },
-        {
-          text: 'Building custom Frames',
-          link: '/guide/compilation/frames/frame'
-        },
-        {
-          text: 'Extension methods for Names in code',
-          link: '/guide/compilation/frames/extension-methods'
-        },
-        {
-          text: 'Injected Fields',
-          link: '/guide/compilation/frames/injected-fields'
-        },
-      ]
-    }
-  ]
-}

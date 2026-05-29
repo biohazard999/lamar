@@ -1,83 +1,107 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using JasperFx.CodeGeneration.Model;
 using Lamar.IoC.Instances;
-using LamarCodeGeneration.Model;
 using Microsoft.Extensions.DependencyInjection;
-using LamarCodeGeneration.Util;
 
-namespace Lamar.IoC.Frames
+namespace Lamar.IoC.Frames;
+
+public class ResolverVariables : IEnumerable<Variable>, IMethodVariables
 {
-    public class ResolverVariables : IEnumerable<Variable>
+    private readonly List<Variable> _all = new();
+    private readonly Dictionary<Instance, Variable> _tracking = new();
+
+    public ResolverVariables()
     {
-        public int VariableSequence { get; set; }
-        
-        private readonly IList<Variable> _cached = new List<Variable>();
-        private readonly IList<Variable> _all = new List<Variable>();
+        Method = this;
+    }
 
-        public ResolverVariables()
+    public ResolverVariables(IMethodVariables method, IList<InjectedServiceField> fields)
+    {
+        Method = method;
+        _all.AddRange(fields);
+
+        foreach (var field in fields) _tracking[field.Instance] = field;
+    }
+
+    public int VariableSequence { get; set; }
+
+    public IMethodVariables Method { get; }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    public IEnumerator<Variable> GetEnumerator()
+    {
+        return _all.GetEnumerator();
+    }
+
+    Variable IMethodVariables.FindVariable(Type type)
+    {
+        return null;
+    }
+
+    public Variable FindVariable(ParameterInfo parameter)
+    {
+        return null;
+    }
+
+    Variable IMethodVariables.FindVariableByName(Type dependency, string name)
+    {
+        return null;
+    }
+
+    bool IMethodVariables.TryFindVariableByName(Type dependency, string name, out Variable variable)
+    {
+        variable = default;
+        return false;
+    }
+
+    Variable IMethodVariables.TryFindVariable(Type type, VariableSource source)
+    {
+        return null;
+    }
+
+    public Variable Resolve(Instance instance, BuildMode mode)
+    {
+        if (_tracking.TryGetValue(instance, out var variable))
         {
-        }
-
-        public ResolverVariables(IList<InjectedServiceField> fields)
-        {
-            _all.AddRange(fields);
-            _cached.AddRange(fields);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public IEnumerator<Variable> GetEnumerator()
-        {
-            return _all.GetEnumerator();
-        }
-
-        public Variable[] AllFor(Instance instance)
-        {
-            return _cached.Where(x => x.RefersTo(instance)).ToArray();
-        }
-
-        public Variable Resolve(Instance instance, BuildMode mode)
-        {
-            if (instance.Lifetime == ServiceLifetime.Transient)
-            {
-                var transient = instance.CreateVariable(mode, this, false);
-
-
-
-                _all.Add(transient);
-
-
-
-
-                return transient;
-            }
-
-            var variable = AllFor(instance).SingleOrDefault();
-            if (variable == null)
-            {
-                variable = instance.CreateVariable(mode, this, false);
-                _all.Add(variable);
-                _cached.Add(variable);
-            }
-
             return variable;
         }
 
-        public void MakeNamesUnique()
+        var fromOutside = Method.TryFindVariable(instance.ServiceType, VariableSource.NotServices);
+        if (fromOutside != null && !(fromOutside is ServiceStandinVariable))
         {
-            var duplicateGroups = _all.GroupBy(x => x.Usage).Where(x => x.Count() > 1).ToArray();
-            foreach (var @group in duplicateGroups)
-            {
-                var i = 0;
-                foreach (var variable in group)
-                {
-                    variable.OverrideName(variable.Usage + ++i);
-                }
-            }
+            _all.Add(fromOutside);
+            _tracking[instance] = fromOutside;
+
+            return fromOutside;
+        }
+
+        variable = instance.CreateVariable(mode, this, false);
+        _all.Add(variable);
+
+        // Don't track it for possible reuse if it's transient
+        if (instance.Lifetime == ServiceLifetime.Scoped)
+        {
+            _tracking[instance] = variable;
+        }
+
+        return variable;
+    }
+
+    public void MakeNamesUnique()
+    {
+        var duplicateGroups = _all.GroupBy(x => x.Usage).Where(x => x.Count() > 1).ToArray();
+        foreach (var group in duplicateGroups)
+        {
+            var i = 0;
+            foreach (var variable in group) variable.OverrideName(variable.Usage + ++i);
         }
     }
 }

@@ -81,10 +81,10 @@ documentation/compilation/frames/injected-fields/
            
             Target("test", DependsOn("compile"),() =>
             {
-                RunTests("LamarCompiler.Testing");
                 RunTests("Lamar.Testing");
                 RunTests("Lamar.AspNetCoreTests");
                 RunTests("Lamar.AspNetCoreTests.Integration");
+                RunTests("MinimalApiTests");
             });
             
             Target("commands", DependsOn("compile"),() =>
@@ -96,16 +96,7 @@ documentation/compilation/frames/injected-fields/
                 RunCurrentProject("lamar-scanning");
                 RunCurrentProject("lamar-services");
                 RunCurrentProject("lamar-validate ConfigOnly");
-                
-                Directory.SetCurrentDirectory(Path.Combine(original, "src", "GeneratorTarget"));
-                RunCurrentProject("?");
-                RunCurrentProject("codegen");
-                RunCurrentProject("codegen preview");
-                RunCurrentProject("codegen write");
-                RunCurrentProject("write");
-                RunCurrentProject("codegen test");
-                RunCurrentProject("codegen delete");
-                
+
                 Directory.SetCurrentDirectory(original);
             });
             
@@ -247,7 +238,7 @@ documentation/compilation/frames/injected-fields/
 
         private static void RunCurrentProject(string args)
         {
-            Run("dotnet", $"run  --framework net5.0 --no-build --no-restore -- {args}");
+            Run("dotnet", $"run  --framework net9.0 --no-build --no-restore -- {args}");
         }
         
         private static void CopyFilesRecursively(string sourcePath, string targetPath)
@@ -301,7 +292,7 @@ documentation/compilation/frames/injected-fields/
 
         private static void RunTests(string projectName, string directoryName = "src")
         {
-            Run("dotnet", $"test -f net5.0 --no-build --no-restore {directoryName}/{projectName}/{projectName}.csproj");
+            Run("dotnet", $"test --no-build --no-restore {directoryName}/{projectName}/{projectName}.csproj");
         }
         
         private static string GetEnvironmentVariable(string variableName)

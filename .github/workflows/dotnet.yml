@@ -5,7 +5,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-    
+
 env:
   config: Release
   disable_test_parallelization: true
@@ -22,10 +22,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 10.0.x
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 9.0.x
+
+
     - name: Test
-      run: dotnet run -p build/build.csproj -- ci
+      run: dotnet run --project build/build.csproj -- ci
